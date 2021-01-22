@@ -1,4 +1,4 @@
-import 'package:water_reminder/models/common_model.dart';
+import 'package:water_reminder/models/common.dart';
 
 class Math {
   static int _getWeightCoef(Gender gender) {
