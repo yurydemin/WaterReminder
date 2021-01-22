@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-
 class Notification {
-  final int timePeriod;
+  final int _time;
+  int get time => _time;
 
-  Notification({
-    @required this.timePeriod,
-  });
+  Notification(this._time);
 }
