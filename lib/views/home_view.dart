@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
+import 'package:enum_to_string/enum_to_string.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeView extends StatefulWidget {
   static const routeName = '/';
@@ -13,6 +15,7 @@ class _HomeViewState extends State<HomeView>
     with AfterLayoutMixin<HomeView>, SingleTickerProviderStateMixin {
   TabController _tabController;
   int _currentTabIndex = 1;
+  bool _isLoading = true;
 
   _tabListener() {
     setState(() {
@@ -62,42 +65,69 @@ class _HomeViewState extends State<HomeView>
           )
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          Container(
-            color: Colors.orange,
-          ),
-          Container(
-            color: Colors.purple,
-          ),
-          Container(
-            color: Colors.yellow,
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : TabBarView(
+              controller: _tabController,
+              children: <Widget>[
+                Container(
+                  color: Colors.orange,
+                ),
+                Container(
+                  color: Colors.purple,
+                ),
+                Container(
+                  color: Colors.yellow,
+                ),
+              ],
+            ),
     );
   }
 
   @override
-  void afterFirstLayout(BuildContext context) {
-    // check first run
+  void afterFirstLayout(BuildContext context) async {
+    //check first run
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool _seen = (prefs.getBool('seen') ?? false);
 
-    // intro dialog
-    //showIntroDialog();
+    if (_seen) {
+      //load already existed profile
+      _loadProfile();
+    } else {
+      //init new profile
+      _showIntroDialog();
+    }
   }
 
-  void showIntroDialog() {
+  void _loadProfile() {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _initProfile() {
+    Navigator.of(context).pop();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _showIntroDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        content: Text('Intro Dialog'),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('Continue'),
-            onPressed: () => Navigator.of(context).pop(),
-          )
-        ],
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          content: Text('Intro Dialog'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Done'),
+              onPressed: _initProfile,
+            )
+          ],
+        ),
       ),
     );
   }
