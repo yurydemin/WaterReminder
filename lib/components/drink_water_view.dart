@@ -8,9 +8,32 @@ class DrinkWaterView extends StatefulWidget {
 }
 
 class _DrinkWaterViewState extends State<DrinkWaterView> {
+  double _progress = 0.75;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        titleSpacing: 0,
+        automaticallyImplyLeading: false,
+        title: Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              height: 30,
+              child: LinearProgressIndicator(
+                value: _progress,
+                backgroundColor: Colors.white,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColorLight),
+              ),
+            ),
+            Text(
+              '500 / 2000 ml',
+              style: TextStyle(color: Colors.black),
+            ),
+          ],
+        ),
+      ),
       body: Center(
         child: Container(
           decoration: BoxDecoration(

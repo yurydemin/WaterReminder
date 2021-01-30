@@ -63,10 +63,10 @@ class _HomeViewState extends State<HomeView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Water Reminder'),
-        centerTitle: true,
-      ),
+      // appBar: AppBar(
+      //   title: Text('Water Reminder'),
+      //   centerTitle: true,
+      // ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (currentIndex) {
           _tabController.index = currentIndex;
