@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:water_reminder/models/common.dart';
+import 'package:water_reminder/extensions/string_extension.dart';
 
 class HomeView extends StatefulWidget {
   static const routeName = '/';
@@ -13,9 +16,20 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView>
     with AfterLayoutMixin<HomeView>, SingleTickerProviderStateMixin {
+  // tabs
   TabController _tabController;
   int _currentTabIndex = 1;
   bool _isLoading = true;
+
+  // enums -> comboboxitem
+  List<String> _genderList;
+  List<String> _activitiesList;
+
+  // intro dialog form
+  GlobalKey<FormState> _introDialogFormKey = GlobalKey<FormState>();
+  TextEditingController _weightController = TextEditingController();
+  String _genderSelected;
+  String _activitiesSelected;
 
   _tabListener() {
     setState(() {
@@ -26,12 +40,21 @@ class _HomeViewState extends State<HomeView>
   @override
   void initState() {
     super.initState();
+    // tabs
     _tabController = TabController(
       length: 3,
       vsync: this,
       initialIndex: 1,
     );
     _tabController.addListener(_tabListener);
+
+    // enums -> comboboxitem
+    _genderList = EnumToString.toList<Gender>(Gender.values)
+        .map((value) => value.firstLetterCap())
+        .toList();
+    _activitiesList = EnumToString.toList<Activity>(Activity.values)
+        .map((value) => value.firstLetterCap())
+        .toList();
   }
 
   @override
@@ -120,7 +143,58 @@ class _HomeViewState extends State<HomeView>
       builder: (context) => WillPopScope(
         onWillPop: () async => false,
         child: AlertDialog(
-          content: Text('Intro Dialog'),
+          content: Form(
+            key: _introDialogFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Gender',
+                  ),
+                  value: _genderSelected,
+                  items: _genderList
+                      .map((label) => DropdownMenuItem(
+                            child: Text(label),
+                            value: label,
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() => _genderSelected = value);
+                  },
+                ),
+                TextFormField(
+                  controller: _weightController,
+                  validator: (value) {
+                    if (value == '') return 'Input your weight';
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Weight',
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                ),
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Activity',
+                  ),
+                  value: _activitiesSelected,
+                  items: _activitiesList
+                      .map((label) => DropdownMenuItem(
+                            child: Text(label),
+                            value: label,
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() => _activitiesSelected = value);
+                  },
+                ),
+              ],
+            ),
+          ),
           actions: <Widget>[
             FlatButton(
               child: Text('Done'),
