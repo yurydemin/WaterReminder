@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:water_reminder/components/drink_water_view.dart';
+import 'package:water_reminder/components/settings_form.dart';
+import 'package:water_reminder/components/stats_table.dart';
 import 'package:water_reminder/models/common.dart';
 import 'package:water_reminder/extensions/string_extension.dart';
 
@@ -95,15 +98,9 @@ class _HomeViewState extends State<HomeView>
           : TabBarView(
               controller: _tabController,
               children: <Widget>[
-                Container(
-                  color: Colors.orange,
-                ),
-                Container(
-                  color: Colors.purple,
-                ),
-                Container(
-                  color: Colors.yellow,
-                ),
+                StatsTable(),
+                DrinkWaterView(),
+                SettingsForm(),
               ],
             ),
     );
