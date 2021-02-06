@@ -107,7 +107,7 @@ class _HomeViewState extends State<HomeView>
   }
 
   void _loadProfile() {
-    Provider.of<DrinkWaterProvider>(context).loadProfile();
+    Provider.of<DrinkWaterProvider>(context, listen: false).loadProfile();
     setState(() {
       _isLoading = false;
     });
@@ -115,7 +115,7 @@ class _HomeViewState extends State<HomeView>
 
   void _initProfile() {
     // TODO validate form
-    Provider.of<DrinkWaterProvider>(context).initNewProfile();
+    Provider.of<DrinkWaterProvider>(context, listen: false).initNewProfile();
     Navigator.of(context).pop();
     setState(() {
       _isLoading = false;

@@ -32,7 +32,6 @@ class DrinkWaterProvider extends ChangeNotifier {
       '12 hours': 12,
       'None': 0,
     };
-    notifyListeners();
   }
 
   void initNewProfile() {

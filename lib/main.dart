@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:water_reminder/providers/drink_water_provider.dart';
 import 'package:water_reminder/views/home_view.dart';
 
 void main() {
@@ -8,16 +10,23 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Water Reminder',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => DrinkWaterProvider(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Water Reminder',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        initialRoute: '/',
+        routes: {
+          '/': (BuildContext context) => HomeView(),
+        },
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (BuildContext context) => HomeView(),
-      },
     );
   }
 }

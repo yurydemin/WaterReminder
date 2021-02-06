@@ -36,7 +36,7 @@ class _SettingsFormState extends State<SettingsForm> {
 
   void _updateProfile() {
     // TODO validate all forms
-    Provider.of<DrinkWaterProvider>(context).updateProfile();
+    Provider.of<DrinkWaterProvider>(context, listen: false).updateProfile();
   }
 
   @override
