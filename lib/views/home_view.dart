@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:after_layout/after_layout.dart';
-import 'package:enum_to_string/enum_to_string.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:water_reminder/components/drink_water_view.dart';
 import 'package:water_reminder/components/settings_form.dart';
 import 'package:water_reminder/components/stats_table.dart';
-import 'package:water_reminder/models/common.dart';
-import 'package:water_reminder/extensions/string_extension.dart';
+import 'package:water_reminder/providers/drink_water_provider.dart';
 
 class HomeView extends StatefulWidget {
   static const routeName = '/';
@@ -23,10 +22,6 @@ class _HomeViewState extends State<HomeView>
   TabController _tabController;
   int _currentTabIndex = 1;
   bool _isLoading = true;
-
-  // enums -> comboboxitem
-  List<String> _genderList;
-  List<String> _activitiesList;
 
   // intro dialog form
   GlobalKey<FormState> _introDialogFormKey = GlobalKey<FormState>();
@@ -50,14 +45,8 @@ class _HomeViewState extends State<HomeView>
       initialIndex: 1,
     );
     _tabController.addListener(_tabListener);
-
-    // enums -> comboboxitem
-    _genderList = EnumToString.toList<Gender>(Gender.values)
-        .map((value) => value.firstLetterCap())
-        .toList();
-    _activitiesList = EnumToString.toList<Activity>(Activity.values)
-        .map((value) => value.firstLetterCap())
-        .toList();
+    // init prepared lists
+    Provider.of<DrinkWaterProvider>(context, listen: false).baseInit();
   }
 
   @override
@@ -118,12 +107,15 @@ class _HomeViewState extends State<HomeView>
   }
 
   void _loadProfile() {
+    Provider.of<DrinkWaterProvider>(context).loadProfile();
     setState(() {
       _isLoading = false;
     });
   }
 
   void _initProfile() {
+    // TODO validate form
+    Provider.of<DrinkWaterProvider>(context).initNewProfile();
     Navigator.of(context).pop();
     setState(() {
       _isLoading = false;
@@ -133,68 +125,80 @@ class _HomeViewState extends State<HomeView>
   void _showIntroDialog() {
     showDialog(
       context: context,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false,
-        child: AlertDialog(
-          content: Form(
-            key: _introDialogFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Gender',
-                  ),
-                  value: _genderSelected,
-                  items: _genderList
-                      .map((label) => DropdownMenuItem(
-                            child: Text(label),
-                            value: label,
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() => _genderSelected = value);
-                  },
-                ),
-                TextFormField(
-                  controller: _weightController,
-                  validator: (value) {
-                    if (value == '') return 'Input your weight';
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Weight',
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+      builder: (context) => Consumer<DrinkWaterProvider>(
+        builder: (context, viewModel, child) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: AlertDialog(
+              content: Form(
+                key: _introDialogFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Gender',
+                      ),
+                      value: _genderSelected,
+                      items: viewModel.genderList
+                          .map((label) => DropdownMenuItem(
+                                child: Text(label),
+                                value: label,
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => _genderSelected = value);
+                      },
+                      validator: (value) {
+                        if (value == '') return 'Set your gender';
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: _weightController,
+                      validator: (value) {
+                        if (value == '') return 'Input your weight';
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Weight',
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                    ),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Activity',
+                      ),
+                      value: _activitiesSelected,
+                      items: viewModel.activitiesList
+                          .map((label) => DropdownMenuItem(
+                                child: Text(label),
+                                value: label,
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => _activitiesSelected = value);
+                      },
+                      validator: (value) {
+                        if (value == '') return 'Set your activity level';
+                        return null;
+                      },
+                    ),
                   ],
                 ),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Activity',
-                  ),
-                  value: _activitiesSelected,
-                  items: _activitiesList
-                      .map((label) => DropdownMenuItem(
-                            child: Text(label),
-                            value: label,
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() => _activitiesSelected = value);
-                  },
-                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Done'),
+                  onPressed: _initProfile,
+                )
               ],
             ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Done'),
-              onPressed: _initProfile,
-            )
-          ],
-        ),
+          );
+        },
       ),
     );
   }
