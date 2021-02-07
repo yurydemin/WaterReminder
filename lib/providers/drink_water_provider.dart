@@ -57,6 +57,21 @@ class DrinkWaterProvider extends ChangeNotifier {
     _seen = _getFirstRunFlagFromPrefs();
   }
 
+  void addOneDrink() {
+    addCustomDrink(_profile.drink.oneDrink);
+  }
+
+  void addDoubleDrink() {
+    addCustomDrink(_profile.drink.doubleDrink);
+  }
+
+  void addCustomDrink(int addedWaterAmount) async {
+    _drinkWaterAmountCurrent += addedWaterAmount;
+    await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
+
+    notifyListeners();
+  }
+
   void initNewProfile(
     String gender,
     int weight,
@@ -66,7 +81,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     _profile = await _initProfile(gender, weight, activity);
 
     // set drink water amount current by default
-    _drinkWaterAmountCurrent = await _setDrinkWaterAmountCurrentToPrefs();
+    _resetCurrentDrinkWaterAmount();
 
     // set first run ok
     _seen = await _setFirstRunFlagToPrefs(firstRunFlag: true);
@@ -134,7 +149,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     bool result =
         await _prefs.setString(_profileName, jsonEncode(newProfile.toJson()));
     print('Profile saved: $result');
-    print('Water amount: ${_profile.personal.waterAmount}');
+    print('Water amount: ${newProfile.personal.waterAmount}');
 
     return newProfile;
   }
@@ -152,15 +167,15 @@ class DrinkWaterProvider extends ChangeNotifier {
     return null;
   }
 
-  Future<int> _setDrinkWaterAmountCurrentToPrefs({
-    int currentDrinkWaterAmount = 0,
-  }) async {
-    // save current drink water amount to prefs
-    bool result = await _prefs.setInt(
-        _drinkWaterAmountCurrentName, currentDrinkWaterAmount);
-    print('DrinkWaterAmountCurrent saved: $result');
+  void _resetCurrentDrinkWaterAmount() async {
+    _drinkWaterAmountCurrent = 0;
+    await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
+  }
 
-    return currentDrinkWaterAmount;
+  Future<void> _setDrinkWaterAmountCurrentToPrefs(int value) async {
+    // save current drink water amount to prefs
+    bool result = await _prefs.setInt(_drinkWaterAmountCurrentName, value);
+    print('DrinkWaterAmountCurrent saved: $result');
   }
 
   int _getDrinkWaterAmountCurrentFromPrefs() {

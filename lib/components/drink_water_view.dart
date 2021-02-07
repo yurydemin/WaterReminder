@@ -10,7 +10,12 @@ class DrinkWaterView extends StatefulWidget {
 }
 
 class _DrinkWaterViewState extends State<DrinkWaterView> {
-  double _progress = 0.75;
+  double _getProgressValue(int currentValue, int requiredValue) {
+    if (currentValue == 0 || requiredValue == 0) return 0.0;
+    if (currentValue >= requiredValue) return 1.0;
+    return (currentValue / requiredValue);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<DrinkWaterProvider>(
@@ -25,14 +30,17 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
                 SizedBox(
                   height: 30,
                   child: LinearProgressIndicator(
-                    value: _progress,
+                    value: _getProgressValue(
+                      viewModel.drinkWaterAmountCurrent,
+                      viewModel.drinkWaterAmountRequired,
+                    ),
                     backgroundColor: Colors.white,
                     valueColor: AlwaysStoppedAnimation<Color>(
                         Theme.of(context).primaryColorLight),
                   ),
                 ),
                 Text(
-                  '500 / 2000 ml',
+                  '${viewModel.drinkWaterAmountCurrent} / ${viewModel.drinkWaterAmountRequired} ml',
                   style: TextStyle(color: Colors.black),
                 ),
               ],
@@ -48,10 +56,15 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
               ),
               child: GestureDetector(
                 onTap: () {
-                  print('Bottle tapped');
+                  viewModel.addOneDrink();
                 },
-                onDoubleTap: () {},
-                onLongPress: () {},
+                onDoubleTap: () {
+                  viewModel.addDoubleDrink();
+                },
+                onLongPress: () {
+                  // show input custom value dialog ->
+                  // viewModel.addCustomDrink(addedWaterAmount);
+                },
                 child: Image.asset(
                   'assets/images/bottle.png',
                   width: 200,

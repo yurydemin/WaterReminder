@@ -28,12 +28,21 @@ class Math {
     return (genderCoef * activityCoef).toInt();
   }
 
+  static int _roundDownToHundred(int number) {
+    int a = number % 100;
+    if (a > 0) {
+      return (number ~/ 100) * 100;
+    }
+    return number;
+  }
+
   static int getRequiredWaterAmount(
     Gender gender,
     int weight,
     Activity activity,
   ) {
-    return weight * _getWeightCoef(gender) +
+    var value = weight * _getWeightCoef(gender) +
         _getAdditionalWaterAmount(gender, activity);
+    return _roundDownToHundred(value);
   }
 }
