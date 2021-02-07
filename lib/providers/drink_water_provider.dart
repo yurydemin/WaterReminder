@@ -1,23 +1,42 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:water_reminder/models/notification.dart' as notify_settings;
+import 'package:water_reminder/models/drink.dart';
+import 'package:water_reminder/models/personal.dart';
 import 'package:water_reminder/models/profile.dart';
 import 'package:water_reminder/models/common.dart';
 import 'package:water_reminder/extensions/string_extension.dart';
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DrinkWaterProvider extends ChangeNotifier {
+  // prefs names
+  final _profileName = 'profile';
+  final _drinkWaterAmountCurrentName = 'drinkWaterAmountCurrent';
+  final _firstRunName = 'seen';
+  // prefs
+  SharedPreferences _prefs;
+  // check first run
+  bool _seen;
   // all settings user profile
   Profile _profile;
+  int _drinkWaterAmountCurrent;
   // enums -> comboboxitem
   List<String> _genderList;
   List<String> _activitiesList;
   Map<String, int> _notificationPeriodList;
 
+  bool get seen => _seen;
   Profile get drinkWaterProfile => _profile;
+  int get drinkWaterAmountRequired =>
+      (_profile == null ? 0 : _profile.personal.waterAmount);
+  int get drinkWaterAmountCurrent => _drinkWaterAmountCurrent;
   List<String> get genderList => _genderList;
   List<String> get activitiesList => _activitiesList;
   Map<String, int> get notificationPeriodList => _notificationPeriodList;
 
-  void baseInit() {
+  Future<void> baseInit() async {
+    // fill lists
     _genderList = EnumToString.toList<Gender>(Gender.values)
         .map((value) => value.firstLetterCap())
         .toList();
@@ -32,17 +51,129 @@ class DrinkWaterProvider extends ChangeNotifier {
       '12 hours': 12,
       'None': 0,
     };
+
+    // init prefs
+    _prefs = await SharedPreferences.getInstance();
+    _seen = _getFirstRunFlagFromPrefs();
   }
 
-  void initNewProfile() {
+  void initNewProfile(
+    String gender,
+    int weight,
+    String activity,
+  ) async {
+    // init new profile with default settings
+    _profile = await _initProfile(gender, weight, activity);
+
+    // set drink water amount current by default
+    _drinkWaterAmountCurrent = await _setDrinkWaterAmountCurrentToPrefs();
+
+    // set first run ok
+    _seen = await _setFirstRunFlagToPrefs(firstRunFlag: true);
+
     notifyListeners();
   }
 
   void loadProfile() {
+    // load profile from prefs
+    _profile = _getProfileFromPrefs();
+    print('Profile loaded: ${_profile != null}');
+    print('Water amount required: ${_profile.personal.waterAmount}');
+
+    // load current drink water amount
+    _drinkWaterAmountCurrent = _getDrinkWaterAmountCurrentFromPrefs();
+    print('DrinkWaterAmountCurrent loaded: $_drinkWaterAmountCurrent');
+
     notifyListeners();
   }
 
-  void updateProfile() {
+  void updateProfile(
+    String gender,
+    int weight,
+    String activity,
+    int oneTapWaterAmount,
+    int doubleTapWaterAmount,
+    int notificationTimeM,
+  ) async {
+    // reinit profile from changed settings
+    _profile = await _initProfile(
+      gender,
+      weight,
+      activity,
+      oneTapWaterAmount: oneTapWaterAmount,
+      doubleTapWaterAmount: doubleTapWaterAmount,
+      notificationTimeM: notificationTimeM,
+    );
+    // update prefs
+    _prefs.reload();
+
     notifyListeners();
+  }
+
+  Future<Profile> _initProfile(
+    String gender,
+    int weight,
+    String activity, {
+    int oneTapWaterAmount = 200,
+    int doubleTapWaterAmount = 400,
+    int notificationTimeM = 120,
+  }) async {
+    // init
+    final g = EnumToString.fromString(Gender.values, gender);
+    final a = EnumToString.fromString(Activity.values, activity);
+    final Personal personal = Personal(g, weight, a);
+    final Drink drink = Drink(
+      oneDrink: oneTapWaterAmount,
+      doubleDrink: doubleTapWaterAmount,
+    );
+    final notify_settings.Notification notification =
+        notify_settings.Notification(time: notificationTimeM);
+    final newProfile = Profile(personal, drink, notification);
+
+    // save profile to prefs
+    bool result =
+        await _prefs.setString(_profileName, jsonEncode(newProfile.toJson()));
+    print('Profile saved: $result');
+    print('Water amount: ${_profile.personal.waterAmount}');
+
+    return newProfile;
+  }
+
+  Profile _getProfileFromPrefs() {
+    Map<String, dynamic> profileMap;
+    final String profileStr = _prefs.getString(_profileName);
+    if (profileStr != null) {
+      profileMap = jsonDecode(profileStr) as Map<String, dynamic>;
+    }
+    if (profileMap != null) {
+      final Profile profile = Profile.fromJson(profileMap);
+      return profile;
+    }
+    return null;
+  }
+
+  Future<int> _setDrinkWaterAmountCurrentToPrefs({
+    int currentDrinkWaterAmount = 0,
+  }) async {
+    // save current drink water amount to prefs
+    bool result = await _prefs.setInt(
+        _drinkWaterAmountCurrentName, currentDrinkWaterAmount);
+    print('DrinkWaterAmountCurrent saved: $result');
+
+    return currentDrinkWaterAmount;
+  }
+
+  int _getDrinkWaterAmountCurrentFromPrefs() {
+    return (_prefs.getInt(_drinkWaterAmountCurrentName) ?? 0);
+  }
+
+  Future<bool> _setFirstRunFlagToPrefs({
+    bool firstRunFlag = false,
+  }) async {
+    return await _prefs.setBool(_firstRunName, firstRunFlag);
+  }
+
+  bool _getFirstRunFlagFromPrefs() {
+    return (_prefs.getBool(_firstRunName) ?? false);
   }
 }

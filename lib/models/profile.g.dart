@@ -8,13 +8,13 @@ part of 'profile.dart';
 
 Profile _$ProfileFromJson(Map<String, dynamic> json) {
   return Profile(
-    personal: json['personal'] == null
+    json['personal'] == null
         ? null
         : Personal.fromJson(json['personal'] as Map<String, dynamic>),
-    drink: json['drink'] == null
+    json['drink'] == null
         ? null
         : Drink.fromJson(json['drink'] as Map<String, dynamic>),
-    notification: json['notification'] == null
+    json['notification'] == null
         ? null
         : Notification.fromJson(json['notification'] as Map<String, dynamic>),
   );

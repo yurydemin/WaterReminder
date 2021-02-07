@@ -8,9 +8,9 @@ part of 'personal.dart';
 
 Personal _$PersonalFromJson(Map<String, dynamic> json) {
   return Personal(
-    gender: _$enumDecodeNullable(_$GenderEnumMap, json['gender']),
-    weight: json['weight'] as int,
-    activity: _$enumDecodeNullable(_$ActivityEnumMap, json['activity']),
+    _$enumDecodeNullable(_$GenderEnumMap, json['gender']),
+    json['weight'] as int,
+    _$enumDecodeNullable(_$ActivityEnumMap, json['activity']),
   );
 }
 

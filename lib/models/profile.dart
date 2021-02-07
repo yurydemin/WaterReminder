@@ -11,7 +11,7 @@ class Profile {
   final Drink drink;
   final Notification notification;
 
-  Profile({this.personal, this.drink, this.notification});
+  Profile(this.personal, this.drink, this.notification);
 
   factory Profile.fromJson(Map<String, dynamic> json) =>
       _$ProfileFromJson(json);

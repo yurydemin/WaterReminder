@@ -36,7 +36,22 @@ class _SettingsFormState extends State<SettingsForm> {
 
   void _updateProfile() {
     // TODO validate all forms
-    Provider.of<DrinkWaterProvider>(context, listen: false).updateProfile();
+
+    final weight = int.parse(_weightController.text);
+    final oneTapStep = int.parse(_stepsOneTapController.text);
+    final doubleTapStep = int.parse(_stepsDoubleTapController.text);
+    final notificationPeriod =
+        Provider.of<DrinkWaterProvider>(context, listen: false)
+            .notificationPeriodList[_notificationPeriodSelected];
+
+    Provider.of<DrinkWaterProvider>(context, listen: false).updateProfile(
+      _genderSelected,
+      weight,
+      _activitiesSelected,
+      oneTapStep,
+      doubleTapStep,
+      notificationPeriod,
+    );
   }
 
   @override

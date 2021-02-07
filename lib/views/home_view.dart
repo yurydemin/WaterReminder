@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:water_reminder/components/drink_water_view.dart';
 import 'package:water_reminder/components/settings_form.dart';
 import 'package:water_reminder/components/stats_table.dart';
@@ -45,8 +44,6 @@ class _HomeViewState extends State<HomeView>
       initialIndex: 1,
     );
     _tabController.addListener(_tabListener);
-    // init prepared lists
-    Provider.of<DrinkWaterProvider>(context, listen: false).baseInit();
   }
 
   @override
@@ -93,11 +90,10 @@ class _HomeViewState extends State<HomeView>
 
   @override
   void afterFirstLayout(BuildContext context) async {
+    // init
+    await Provider.of<DrinkWaterProvider>(context, listen: false).baseInit();
     //check first run
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool _seen = (prefs.getBool('seen') ?? false);
-
-    if (_seen) {
+    if (Provider.of<DrinkWaterProvider>(context, listen: false).seen) {
       //load already existed profile
       _loadProfile();
     } else {
@@ -115,7 +111,17 @@ class _HomeViewState extends State<HomeView>
 
   void _initProfile() {
     // TODO validate form
-    Provider.of<DrinkWaterProvider>(context, listen: false).initNewProfile();
+
+    final weight = int.parse(_weightController.text);
+    Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).initNewProfile(
+      _genderSelected,
+      weight,
+      _activitiesSelected,
+    );
+
     Navigator.of(context).pop();
     setState(() {
       _isLoading = false;
