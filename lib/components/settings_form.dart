@@ -19,7 +19,7 @@ class _SettingsFormState extends State<SettingsForm> {
   String _notificationPeriodSelected;
 
   // intro dialog form
-  GlobalKey<FormState> _introDialogFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _personalFormKey = GlobalKey<FormState>();
   TextEditingController _weightController = TextEditingController();
   String _genderSelected;
   String _activitiesSelected;
@@ -35,7 +35,13 @@ class _SettingsFormState extends State<SettingsForm> {
   }
 
   void _updateProfile() {
-    // TODO validate all forms
+    var stepsFormValidation = _stepsFormKey.currentState.validate();
+    var notificationsFormValidation =
+        _notificationsFormKey.currentState.validate();
+    var personalFormValidation = _personalFormKey.currentState.validate();
+    if (!(stepsFormValidation &&
+        notificationsFormValidation &&
+        personalFormValidation)) return;
 
     final weight = int.parse(_weightController.text);
     final oneTapStep = int.parse(_stepsOneTapController.text);
@@ -76,11 +82,14 @@ class _SettingsFormState extends State<SettingsForm> {
                       TextFormField(
                         controller: _stepsOneTapController,
                         validator: (value) {
-                          if (value == '') return 'One tap bottle water amount';
+                          if (value == null || value.isEmpty)
+                            return 'Input one tap bottle water amount (ml)';
+                          if (int.parse(value) <= 0)
+                            return 'Incorrect water amount value';
                           return null;
                         },
                         decoration: InputDecoration(
-                          labelText: 'One tap drink',
+                          labelText: 'One tap drink (ml)',
                         ),
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
@@ -90,12 +99,14 @@ class _SettingsFormState extends State<SettingsForm> {
                       TextFormField(
                         controller: _stepsDoubleTapController,
                         validator: (value) {
-                          if (value == '')
-                            return 'Double tap bottle water amount';
+                          if (value == null || value.isEmpty)
+                            return 'Input double tap bottle water amount (ml)';
+                          if (int.parse(value) <= 0)
+                            return 'Incorrect water amount value';
                           return null;
                         },
                         decoration: InputDecoration(
-                          labelText: 'Double tap drink',
+                          labelText: 'Double tap drink (ml)',
                         ),
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
@@ -127,7 +138,8 @@ class _SettingsFormState extends State<SettingsForm> {
                           setState(() => _notificationPeriodSelected = value);
                         },
                         validator: (value) {
-                          if (value == '') return 'Choose notification period';
+                          if (value == null || value.isEmpty)
+                            return 'Choose notification period';
                           return null;
                         },
                       ),
@@ -137,7 +149,7 @@ class _SettingsFormState extends State<SettingsForm> {
                 _getFormsDivider(),
                 Text("Personal"),
                 Form(
-                  key: _introDialogFormKey,
+                  key: _personalFormKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -156,14 +168,18 @@ class _SettingsFormState extends State<SettingsForm> {
                           setState(() => _genderSelected = value);
                         },
                         validator: (value) {
-                          if (value == '') return 'Set your gender';
+                          if (value == null || value.isEmpty)
+                            return 'Set your gender';
                           return null;
                         },
                       ),
                       TextFormField(
                         controller: _weightController,
                         validator: (value) {
-                          if (value == '') return 'Input your weight';
+                          if (value == null || value.isEmpty)
+                            return 'Input your weight';
+                          if (int.parse(value) <= 0)
+                            return 'Incorrect weight value';
                           return null;
                         },
                         decoration: InputDecoration(
@@ -189,7 +205,8 @@ class _SettingsFormState extends State<SettingsForm> {
                           setState(() => _activitiesSelected = value);
                         },
                         validator: (value) {
-                          if (value == '') return 'Set your activity level';
+                          if (value == null || value.isEmpty)
+                            return 'Set your activity level';
                           return null;
                         },
                       ),

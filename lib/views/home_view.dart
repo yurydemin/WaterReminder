@@ -110,9 +110,11 @@ class _HomeViewState extends State<HomeView>
   }
 
   void _initProfile() {
-    // TODO validate form
-
+    // validate
+    if (!_introDialogFormKey.currentState.validate()) return;
+    // parse form values
     final weight = int.parse(_weightController.text);
+    // init new user profile
     Provider.of<DrinkWaterProvider>(
       context,
       listen: false,
@@ -156,14 +158,18 @@ class _HomeViewState extends State<HomeView>
                         setState(() => _genderSelected = value);
                       },
                       validator: (value) {
-                        if (value == '') return 'Set your gender';
+                        if (value == null || value.isEmpty)
+                          return 'Set your gender';
                         return null;
                       },
                     ),
                     TextFormField(
                       controller: _weightController,
                       validator: (value) {
-                        if (value == '') return 'Input your weight';
+                        if (value == null || value.isEmpty)
+                          return 'Input your weight';
+                        if (int.parse(value) <= 0)
+                          return 'Incorrect weight value';
                         return null;
                       },
                       decoration: InputDecoration(
@@ -189,7 +195,8 @@ class _HomeViewState extends State<HomeView>
                         setState(() => _activitiesSelected = value);
                       },
                       validator: (value) {
-                        if (value == '') return 'Set your activity level';
+                        if (value == null || value.isEmpty)
+                          return 'Set your activity level';
                         return null;
                       },
                     ),
