@@ -11,19 +11,10 @@ class SettingsForm extends StatefulWidget {
 }
 
 class _SettingsFormState extends State<SettingsForm> {
-  GlobalKey<FormState> _stepsFormKey = GlobalKey<FormState>();
-  TextEditingController _stepsOneTapController = TextEditingController();
-  TextEditingController _stepsDoubleTapController = TextEditingController();
+  // settings changed flag
+  bool _isChanged = false;
 
-  GlobalKey<FormState> _notificationsFormKey = GlobalKey<FormState>();
-  String _notificationPeriodSelected;
-
-  // intro dialog form
-  GlobalKey<FormState> _personalFormKey = GlobalKey<FormState>();
-  TextEditingController _weightController = TextEditingController();
-  String _genderSelected;
-  String _activitiesSelected;
-
+  // form divider
   Widget _getFormsDivider() {
     return Divider(
       color: Colors.black,
@@ -34,7 +25,31 @@ class _SettingsFormState extends State<SettingsForm> {
     );
   }
 
+  // drink water steps form
+  GlobalKey<FormState> _stepsFormKey = GlobalKey<FormState>();
+  TextEditingController _stepsOneTapController = TextEditingController();
+  TextEditingController _stepsDoubleTapController = TextEditingController();
+
+  // notifications form
+  GlobalKey<FormState> _notificationsFormKey = GlobalKey<FormState>();
+  String _notificationPeriodSelected;
+
+  // personal form
+  GlobalKey<FormState> _personalFormKey = GlobalKey<FormState>();
+  TextEditingController _weightController = TextEditingController();
+  String _genderSelected;
+  String _activitiesSelected;
+
+  // check settings changed
+  void _settingsChanged() {
+    setState(() {
+      _isChanged = true;
+    });
+  }
+
+  // save settings to user profile
   void _updateProfile() {
+    // validate forms
     var stepsFormValidation = _stepsFormKey.currentState.validate();
     var notificationsFormValidation =
         _notificationsFormKey.currentState.validate();
@@ -42,6 +57,11 @@ class _SettingsFormState extends State<SettingsForm> {
     if (!(stepsFormValidation &&
         notificationsFormValidation &&
         personalFormValidation)) return;
+
+    // save forms states
+    _stepsFormKey.currentState.save();
+    _notificationsFormKey.currentState.save();
+    _personalFormKey.currentState.save();
 
     final weight = int.parse(_weightController.text);
     final oneTapStep = int.parse(_stepsOneTapController.text);
@@ -58,6 +78,32 @@ class _SettingsFormState extends State<SettingsForm> {
       doubleTapStep,
       notificationPeriod,
     );
+
+    setState(() {
+      _isChanged = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // fill properties from user profile
+    _stepsOneTapController.text =
+        Provider.of<DrinkWaterProvider>(context, listen: false)
+            .oneTapBottleWaterAmount;
+    _stepsDoubleTapController.text =
+        Provider.of<DrinkWaterProvider>(context, listen: false)
+            .doubleTapBottleWaterAmount;
+    _notificationPeriodSelected =
+        Provider.of<DrinkWaterProvider>(context, listen: false)
+            .notificationPeriodTitle;
+    _genderSelected =
+        Provider.of<DrinkWaterProvider>(context, listen: false).gender;
+    _activitiesSelected =
+        Provider.of<DrinkWaterProvider>(context, listen: false).activity;
+    _weightController.text =
+        Provider.of<DrinkWaterProvider>(context, listen: false).weight;
   }
 
   @override
@@ -81,6 +127,11 @@ class _SettingsFormState extends State<SettingsForm> {
                     children: [
                       TextFormField(
                         controller: _stepsOneTapController,
+                        onChanged: (value) {
+                          if (value != viewModel.oneTapBottleWaterAmount) {
+                            _settingsChanged();
+                          }
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Input one tap bottle water amount (ml)';
@@ -98,6 +149,11 @@ class _SettingsFormState extends State<SettingsForm> {
                       ),
                       TextFormField(
                         controller: _stepsDoubleTapController,
+                        onChanged: (value) {
+                          if (value != viewModel.doubleTapBottleWaterAmount) {
+                            _settingsChanged();
+                          }
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Input double tap bottle water amount (ml)';
@@ -135,7 +191,11 @@ class _SettingsFormState extends State<SettingsForm> {
                                 ))
                             .toList(),
                         onChanged: (value) {
-                          setState(() => _notificationPeriodSelected = value);
+                          if (value != _notificationPeriodSelected) {
+                            _notificationPeriodSelected = value;
+                            _settingsChanged();
+                          }
+                          //setState(() => _notificationPeriodSelected = value);
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty)
@@ -165,7 +225,11 @@ class _SettingsFormState extends State<SettingsForm> {
                                 ))
                             .toList(),
                         onChanged: (value) {
-                          setState(() => _genderSelected = value);
+                          if (value != _genderSelected) {
+                            _genderSelected = value;
+                            _settingsChanged();
+                          }
+                          //setState(() => _genderSelected = value);
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty)
@@ -175,6 +239,11 @@ class _SettingsFormState extends State<SettingsForm> {
                       ),
                       TextFormField(
                         controller: _weightController,
+                        onChanged: (value) {
+                          if (value != viewModel.weight) {
+                            _settingsChanged();
+                          }
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Input your weight';
@@ -202,7 +271,11 @@ class _SettingsFormState extends State<SettingsForm> {
                                 ))
                             .toList(),
                         onChanged: (value) {
-                          setState(() => _activitiesSelected = value);
+                          if (value != _activitiesSelected) {
+                            _activitiesSelected = value;
+                            _settingsChanged();
+                          }
+                          //setState(() => _activitiesSelected = value);
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty)
@@ -214,10 +287,11 @@ class _SettingsFormState extends State<SettingsForm> {
                   ),
                 ),
                 _getFormsDivider(),
-                RaisedButton(
-                  child: Text('Update'),
-                  onPressed: _updateProfile,
-                ),
+                if (_isChanged)
+                  RaisedButton(
+                    child: Text('Update'),
+                    onPressed: _updateProfile,
+                  ),
               ],
             ),
           ),

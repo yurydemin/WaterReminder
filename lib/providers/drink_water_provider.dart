@@ -29,8 +29,38 @@ class DrinkWaterProvider extends ChangeNotifier {
   // first run
   bool get seen => _seen;
 
-  // drink water params
+  // general lists
+  List<String> get genderList => _genderList;
+  List<String> get activitiesList => _activitiesList;
+  Map<String, int> get notificationPeriodList => _notificationPeriodList;
+
+  // settings
   Profile get drinkWaterProfile => _profile;
+
+  String get oneTapBottleWaterAmount =>
+      (_profile == null ? '0' : _profile.drink.oneDrink.toString());
+  String get doubleTapBottleWaterAmount =>
+      (_profile == null ? '0' : _profile.drink.doubleDrink.toString());
+
+  int get notificationPeriodTime =>
+      (_profile == null ? 0 : _profile.notification.time);
+  String get notificationPeriodTitle => (_profile == null
+      ? null
+      : _notificationPeriodList.keys.firstWhere(
+          (k) => _notificationPeriodList[k] == _profile.notification.time));
+
+  String get gender => (_profile == null
+      ? null
+      : EnumToString.convertToString(_profile.personal.gender)
+          .firstLetterCap());
+  String get activity => (_profile == null
+      ? null
+      : EnumToString.convertToString(_profile.personal.activity)
+          .firstLetterCap());
+  String get weight =>
+      (_profile == null ? '0' : _profile.personal.weight.toString());
+
+  // drink water params
   int get drinkWaterAmountRequired =>
       (_profile == null ? 0 : _profile.personal.waterAmount);
   int get drinkWaterAmountCurrent => _drinkWaterAmountCurrent;
@@ -41,11 +71,6 @@ class DrinkWaterProvider extends ChangeNotifier {
     return (drinkWaterAmountCurrent / drinkWaterAmountRequired);
   }
 
-  // general lists
-  List<String> get genderList => _genderList;
-  List<String> get activitiesList => _activitiesList;
-  Map<String, int> get notificationPeriodList => _notificationPeriodList;
-
   Future<void> baseInit() async {
     // fill lists
     _genderList = EnumToString.toList<Gender>(Gender.values)
@@ -55,11 +80,11 @@ class DrinkWaterProvider extends ChangeNotifier {
         .map((value) => value.firstLetterCap())
         .toList();
     _notificationPeriodList = {
-      '1 hour': 1,
-      '2 hours': 2,
-      '3 hours': 3,
-      '6 hours': 6,
-      '12 hours': 12,
+      '1 hour': 60,
+      '2 hours': 120,
+      '3 hours': 180,
+      '6 hours': 360,
+      '12 hours': 720,
       'None': 0,
     };
 
