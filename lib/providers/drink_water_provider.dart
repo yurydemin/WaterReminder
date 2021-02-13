@@ -26,11 +26,22 @@ class DrinkWaterProvider extends ChangeNotifier {
   List<String> _activitiesList;
   Map<String, int> _notificationPeriodList;
 
+  // first run
   bool get seen => _seen;
+
+  // drink water params
   Profile get drinkWaterProfile => _profile;
   int get drinkWaterAmountRequired =>
       (_profile == null ? 0 : _profile.personal.waterAmount);
   int get drinkWaterAmountCurrent => _drinkWaterAmountCurrent;
+  double get drinkWaterProgress {
+    if (drinkWaterAmountCurrent == 0 || drinkWaterAmountRequired == 0)
+      return 0.0;
+    if (drinkWaterAmountCurrent >= drinkWaterAmountRequired) return 1.0;
+    return (drinkWaterAmountCurrent / drinkWaterAmountRequired);
+  }
+
+  // general lists
   List<String> get genderList => _genderList;
   List<String> get activitiesList => _activitiesList;
   Map<String, int> get notificationPeriodList => _notificationPeriodList;

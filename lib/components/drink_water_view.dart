@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:water_reminder/models/drink_water_menu_item.dart';
 import 'package:water_reminder/providers/drink_water_provider.dart';
 
 class DrinkWaterView extends StatefulWidget {
@@ -10,14 +11,64 @@ class DrinkWaterView extends StatefulWidget {
 }
 
 class _DrinkWaterViewState extends State<DrinkWaterView> {
-  double _getProgressValue(int currentValue, int requiredValue) {
-    if (currentValue == 0 || requiredValue == 0) return 0.0;
-    if (currentValue >= requiredValue) return 1.0;
-    return (currentValue / requiredValue);
-  }
+  final List<DrinkWaterMenuItem> _drinkWaterMenuItems = [
+    DrinkWaterMenuItem(
+      title: 'Add custom amount',
+      choice: DrinkWaterMenuChoice.add,
+    ),
+    DrinkWaterMenuItem(
+      title: 'Undo last drink',
+      choice: DrinkWaterMenuChoice.undo,
+    ),
+    DrinkWaterMenuItem(
+      title: 'Reset current day',
+      choice: DrinkWaterMenuChoice.reset,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    var _tapPosition;
+
+    // popup menu for long press bottle
+    void _showDrinkWaterMenu() {
+      final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+
+      showMenu(
+        context: context,
+        position: RelativeRect.fromRect(
+          _tapPosition & const Size(-50, 100),
+          Offset.zero & overlay.size,
+        ),
+        items: _drinkWaterMenuItems.map(
+          (item) {
+            return PopupMenuItem<DrinkWaterMenuItem>(
+              value: item,
+              child: Text(item.title),
+            );
+          },
+        ).toList(),
+      ).then(
+        (selectedItem) {
+          if (selectedItem == null) return;
+          switch (selectedItem.choice) {
+            case DrinkWaterMenuChoice.add:
+              break;
+            case DrinkWaterMenuChoice.undo:
+              break;
+            case DrinkWaterMenuChoice.reset:
+              break;
+            default:
+          }
+        },
+      );
+    }
+
+    // save gesture detector tap position
+    void _storeTapPosition(TapDownDetails details) {
+      _tapPosition = details.globalPosition;
+    }
+
     return Consumer<DrinkWaterProvider>(
       builder: (context, viewModel, child) {
         return Scaffold(
@@ -30,10 +81,7 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
                 SizedBox(
                   height: 30,
                   child: LinearProgressIndicator(
-                    value: _getProgressValue(
-                      viewModel.drinkWaterAmountCurrent,
-                      viewModel.drinkWaterAmountRequired,
-                    ),
+                    value: viewModel.drinkWaterProgress,
                     backgroundColor: Colors.white,
                     valueColor: AlwaysStoppedAnimation<Color>(
                         Theme.of(context).primaryColorLight),
@@ -55,16 +103,14 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
                 ),
               ),
               child: GestureDetector(
+                onTapDown: _storeTapPosition,
                 onTap: () {
                   viewModel.addOneDrink();
                 },
                 onDoubleTap: () {
                   viewModel.addDoubleDrink();
                 },
-                onLongPress: () {
-                  // show input custom value dialog ->
-                  // viewModel.addCustomDrink(addedWaterAmount);
-                },
+                onLongPress: _showDrinkWaterMenu,
                 child: Image.asset(
                   'assets/images/bottle.png',
                   width: 200,
