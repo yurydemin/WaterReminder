@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:water_reminder/models/drink_water_menu_item.dart';
 import 'package:water_reminder/providers/drink_water_provider.dart';
@@ -21,14 +22,46 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
       choice: DrinkWaterMenuChoice.add,
     ),
     DrinkWaterMenuItem(
-      title: 'Undo last drink',
+      title: 'Undo previous drink',
       choice: DrinkWaterMenuChoice.undo,
     ),
     DrinkWaterMenuItem(
-      title: 'Reset current day',
+      title: 'Reset current progress',
       choice: DrinkWaterMenuChoice.reset,
     ),
   ];
+
+  // dialogs
+  GlobalKey<FormState> _addCustomWaterAmountDialogFormKey =
+      GlobalKey<FormState>();
+  TextEditingController _customWaterAmountController = TextEditingController();
+
+  // add custom water amount
+  void _addCustomWaterAmount() {
+    if (!_addCustomWaterAmountDialogFormKey.currentState.validate()) return;
+    _addCustomWaterAmountDialogFormKey.currentState.save();
+    // parse form values
+    final customWaterAmount = int.parse(_customWaterAmountController.text);
+    // add
+    Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).addCustomDrink(customWaterAmount);
+    // reset form
+    _addCustomWaterAmountDialogFormKey.currentState.reset();
+    // close dialog
+    Navigator.of(context).pop();
+  }
+
+  // reset current day progress
+  void _resetCurrentDayProgress() {
+    Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).resetCurrentProgress();
+
+    Navigator.of(context).pop();
+  }
 
   // save gesture detector tap position
   void _storeTapPosition(TapDownDetails details) {
@@ -44,11 +77,84 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
   }
 
   // popup menu items actions
-  void _showAddDialog() {}
+  void _showAddDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          content: Form(
+            key: _addCustomWaterAmountDialogFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _customWaterAmountController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Input water amount (ml)';
+                    if (int.parse(value) <= 0)
+                      return 'Incorrect water amount value';
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Input water amount (ml)',
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Add'),
+              onPressed: _addCustomWaterAmount,
+            ),
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  void _undoPreviousDrinkAction() {}
+  void _undoPreviousDrinkAction() {
+    Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).undoLastDrink();
+  }
 
-  void _showResetDialog() {}
+  void _showResetDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          title: Text('Reset current day progress?'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Reset'),
+              onPressed: _resetCurrentDayProgress,
+            ),
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   // popup menu for long press bottle
   void _showDrinkWaterMenu() {

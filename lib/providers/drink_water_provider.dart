@@ -131,6 +131,15 @@ class DrinkWaterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void resetCurrentProgress() {
+    // save drink action to history
+    _addDrinkAction(-_drinkWaterAmountCurrent);
+    // reset current water amount to zero
+    _resetCurrentDrinkWaterAmount();
+
+    notifyListeners();
+  }
+
   // work with drink actions history
   void _addDrinkAction(int addedWaterAmount) {
     // check history -> isFull ?
