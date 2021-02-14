@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:water_reminder/models/notification.dart' as notify_settings;
@@ -14,17 +15,24 @@ class DrinkWaterProvider extends ChangeNotifier {
   final _profileName = 'profile';
   final _drinkWaterAmountCurrentName = 'drinkWaterAmountCurrent';
   final _firstRunName = 'seen';
+  final _statsName = 'stats';
   // prefs
   SharedPreferences _prefs;
-  // check first run
+  // user drink actions history
+  final int _drinkActionsHistoryMaxSize = 10;
+  Queue<int> _drinkActionsHistory;
+  // first run
   bool _seen;
   // all settings user profile
   Profile _profile;
   int _drinkWaterAmountCurrent;
-  // enums -> comboboxitem
+  // -> comboboxitems
   List<String> _genderList;
   List<String> _activitiesList;
   Map<String, int> _notificationPeriodList;
+
+  // is possible to undo drink action
+  bool get isPossibleUndoDrinkAction => _drinkActionsHistory.isNotEmpty;
 
   // first run
   bool get seen => _seen;
@@ -35,8 +43,6 @@ class DrinkWaterProvider extends ChangeNotifier {
   Map<String, int> get notificationPeriodList => _notificationPeriodList;
 
   // settings
-  Profile get drinkWaterProfile => _profile;
-
   String get oneTapBottleWaterAmount =>
       (_profile == null ? '0' : _profile.drink.oneDrink.toString());
   String get doubleTapBottleWaterAmount =>
@@ -90,9 +96,13 @@ class DrinkWaterProvider extends ChangeNotifier {
 
     // init prefs
     _prefs = await SharedPreferences.getInstance();
+    // init history
+    _drinkActionsHistory = Queue<int>();
+    // check first run
     _seen = _getFirstRunFlagFromPrefs();
   }
 
+  // drink actions
   void addOneDrink() {
     addCustomDrink(_profile.drink.oneDrink);
   }
@@ -102,12 +112,42 @@ class DrinkWaterProvider extends ChangeNotifier {
   }
 
   void addCustomDrink(int addedWaterAmount) async {
+    // add to current water amount
     _drinkWaterAmountCurrent += addedWaterAmount;
+    // save to prefs
+    await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
+    // save drink action to history
+    _addDrinkAction(addedWaterAmount);
+
+    notifyListeners();
+  }
+
+  void undoLastDrink() async {
+    // subtract from current water amount
+    _drinkWaterAmountCurrent -= _undoDrinkAction();
+    // save to prefs
     await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
 
     notifyListeners();
   }
 
+  // work with drink actions history
+  void _addDrinkAction(int addedWaterAmount) {
+    // check history -> isFull ?
+    if (_drinkActionsHistory.isNotEmpty &&
+        (_drinkActionsHistory.length + 1) >= _drinkActionsHistoryMaxSize)
+      _drinkActionsHistory.removeFirst();
+
+    _drinkActionsHistory.add(addedWaterAmount);
+  }
+
+  int _undoDrinkAction() {
+    return _drinkActionsHistory.isNotEmpty
+        ? _drinkActionsHistory.removeLast()
+        : 0;
+  }
+
+  // work with profile
   void initNewProfile(
     String gender,
     int weight,
@@ -209,7 +249,6 @@ class DrinkWaterProvider extends ChangeNotifier {
   }
 
   Future<void> _setDrinkWaterAmountCurrentToPrefs(int value) async {
-    // save current drink water amount to prefs
     bool result = await _prefs.setInt(_drinkWaterAmountCurrentName, value);
     print('DrinkWaterAmountCurrent saved: $result');
   }

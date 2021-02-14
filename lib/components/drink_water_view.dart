@@ -11,6 +11,10 @@ class DrinkWaterView extends StatefulWidget {
 }
 
 class _DrinkWaterViewState extends State<DrinkWaterView> {
+  // gesture detector tap position
+  var _tapPosition;
+
+  // popup menu items list
   final List<DrinkWaterMenuItem> _drinkWaterMenuItems = [
     DrinkWaterMenuItem(
       title: 'Add custom amount',
@@ -26,49 +30,68 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
     ),
   ];
 
+  // save gesture detector tap position
+  void _storeTapPosition(TapDownDetails details) {
+    _tapPosition = details.globalPosition;
+  }
+
+  // check drink actions history to avoid undo
+  bool _checkIsUndoPossible() {
+    return Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).isPossibleUndoDrinkAction;
+  }
+
+  // popup menu items actions
+  void _showAddDialog() {}
+
+  void _undoPreviousDrinkAction() {}
+
+  void _showResetDialog() {}
+
+  // popup menu for long press bottle
+  void _showDrinkWaterMenu() {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        _tapPosition & const Size(-50, 100),
+        Offset.zero & overlay.size,
+      ),
+      items: _drinkWaterMenuItems.map(
+        (item) {
+          return PopupMenuItem<DrinkWaterMenuItem>(
+            value: item,
+            child: Text(item.title),
+            enabled: item.choice == DrinkWaterMenuChoice.undo
+                ? _checkIsUndoPossible()
+                : true,
+          );
+        },
+      ).toList(),
+    ).then(
+      (selectedItem) {
+        if (selectedItem == null) return;
+        switch (selectedItem.choice) {
+          case DrinkWaterMenuChoice.add:
+            _showAddDialog();
+            break;
+          case DrinkWaterMenuChoice.undo:
+            _undoPreviousDrinkAction();
+            break;
+          case DrinkWaterMenuChoice.reset:
+            _showResetDialog();
+            break;
+          default:
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    var _tapPosition;
-
-    // popup menu for long press bottle
-    void _showDrinkWaterMenu() {
-      final RenderBox overlay = Overlay.of(context).context.findRenderObject();
-
-      showMenu(
-        context: context,
-        position: RelativeRect.fromRect(
-          _tapPosition & const Size(-50, 100),
-          Offset.zero & overlay.size,
-        ),
-        items: _drinkWaterMenuItems.map(
-          (item) {
-            return PopupMenuItem<DrinkWaterMenuItem>(
-              value: item,
-              child: Text(item.title),
-            );
-          },
-        ).toList(),
-      ).then(
-        (selectedItem) {
-          if (selectedItem == null) return;
-          switch (selectedItem.choice) {
-            case DrinkWaterMenuChoice.add:
-              break;
-            case DrinkWaterMenuChoice.undo:
-              break;
-            case DrinkWaterMenuChoice.reset:
-              break;
-            default:
-          }
-        },
-      );
-    }
-
-    // save gesture detector tap position
-    void _storeTapPosition(TapDownDetails details) {
-      _tapPosition = details.globalPosition;
-    }
-
     return Consumer<DrinkWaterProvider>(
       builder: (context, viewModel, child) {
         return Scaffold(
