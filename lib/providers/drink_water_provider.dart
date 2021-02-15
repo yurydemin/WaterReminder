@@ -216,7 +216,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     String activity, {
     int oneTapWaterAmount = 200,
     int doubleTapWaterAmount = 400,
-    int notificationTimeM = 120,
+    int notificationTimeM = 0,
   }) async {
     // init
     final g = EnumToString.fromString(Gender.values, gender);

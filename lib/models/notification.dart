@@ -6,7 +6,7 @@ part 'notification.g.dart';
 class Notification {
   final int time;
 
-  Notification({this.time = 120});
+  Notification({this.time = 0});
 
   factory Notification.fromJson(Map<String, dynamic> json) =>
       _$NotificationFromJson(json);
