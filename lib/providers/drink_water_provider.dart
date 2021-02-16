@@ -117,26 +117,26 @@ class DrinkWaterProvider extends ChangeNotifier {
     addCustomDrink(_profile.drink.doubleDrink);
   }
 
-  void addCustomDrink(int addedWaterAmount) async {
+  void addCustomDrink(int addedWaterAmount) {
     // add to current water amount
     _drinkWaterAmountCurrent += addedWaterAmount;
+    notifyListeners();
+
     // save to prefs
-    await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
+    _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
     // save drink action to history
     _addDrinkAction(addedWaterAmount);
     // start shedule notification
     NotificationsHelper.setScheduleNotification(notificationPeriodTime);
-
-    notifyListeners();
   }
 
-  void undoLastDrink() async {
+  void undoLastDrink() {
     // subtract from current water amount
     _drinkWaterAmountCurrent -= _undoDrinkAction();
-    // save to prefs
-    await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
-
     notifyListeners();
+
+    // save to prefs
+    _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
   }
 
   void resetCurrentProgress() {
@@ -165,7 +165,7 @@ class DrinkWaterProvider extends ChangeNotifier {
   }
 
   // work with profile
-  void initNewProfile(
+  Future<void> initNewProfile(
     String gender,
     int weight,
     String activity,
@@ -176,7 +176,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     // update current date
     _newDayControlDate = DateTime.now();
     // save newDayControlDate to prefs
-    await _setNewDaycontrolDateToPrefs(_newDayControlDate);
+    _setNewDaycontrolDateToPrefs(_newDayControlDate);
     // set drink water amount current by default
     _resetCurrentDrinkWaterAmount();
 
@@ -186,7 +186,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void loadProfile() async {
+  void loadProfile() {
     // load profile from prefs
     _profile = _getProfileFromPrefs();
     print('Profile loaded: ${_profile != null}');
@@ -205,7 +205,7 @@ class DrinkWaterProvider extends ChangeNotifier {
       // update current date
       _newDayControlDate = DateTime.now();
       // save newDayControlDate to prefs
-      await _setNewDaycontrolDateToPrefs(_newDayControlDate);
+      _setNewDaycontrolDateToPrefs(_newDayControlDate);
       // reset progress
       _resetCurrentDrinkWaterAmount();
     }
@@ -231,7 +231,9 @@ class DrinkWaterProvider extends ChangeNotifier {
       notificationTimeM: notificationTimeM,
     );
     // update prefs
-    _prefs.reload();
+    await _prefs.reload();
+    // update shedule notification
+    NotificationsHelper.setScheduleNotification(notificationPeriodTime);
 
     notifyListeners();
   }
@@ -278,12 +280,12 @@ class DrinkWaterProvider extends ChangeNotifier {
     return null;
   }
 
-  void _resetCurrentDrinkWaterAmount() async {
+  void _resetCurrentDrinkWaterAmount() {
     _drinkWaterAmountCurrent = 0;
-    await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
+    _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
   }
 
-  Future<void> _setDrinkWaterAmountCurrentToPrefs(int value) async {
+  void _setDrinkWaterAmountCurrentToPrefs(int value) async {
     bool result = await _prefs.setInt(_drinkWaterAmountCurrentName, value);
     print('DrinkWaterAmountCurrent saved: $result');
   }
@@ -302,7 +304,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     return (_prefs.getBool(_firstRunName) ?? false);
   }
 
-  Future<void> _setNewDaycontrolDateToPrefs(DateTime date) async {
+  void _setNewDaycontrolDateToPrefs(DateTime date) async {
     bool result =
         await _prefs.setString(_newDayControlDateName, date.toString());
     print('NewDayControlDate saved: $result');

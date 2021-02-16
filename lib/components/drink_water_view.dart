@@ -225,12 +225,12 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
           ),
           body: Center(
             child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.red,
-                  width: 2,
-                ),
-              ),
+              // decoration: BoxDecoration(
+              //   border: Border.all(
+              //     color: Colors.red,
+              //     width: 2,
+              //   ),
+              // ),
               child: GestureDetector(
                 onTapDown: _storeTapPosition,
                 onTap: () {

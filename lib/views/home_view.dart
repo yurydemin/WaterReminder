@@ -109,13 +109,13 @@ class _HomeViewState extends State<HomeView>
     });
   }
 
-  void _initProfile() {
+  void _initProfile() async {
     // validate
     if (!_introDialogFormKey.currentState.validate()) return;
     // parse form values
     final weight = int.parse(_weightController.text);
     // init new user profile
-    Provider.of<DrinkWaterProvider>(
+    await Provider.of<DrinkWaterProvider>(
       context,
       listen: false,
     ).initNewProfile(
