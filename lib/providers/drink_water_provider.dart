@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:water_reminder/helpers/notifications_helper.dart';
 import 'package:water_reminder/models/notification.dart' as notify_settings;
 import 'package:water_reminder/models/drink.dart';
 import 'package:water_reminder/models/personal.dart';
@@ -118,6 +119,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     await _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
     // save drink action to history
     _addDrinkAction(addedWaterAmount);
+    // start shedule notification
+    NotificationsHelper.setScheduleNotification(notificationPeriodTime);
 
     notifyListeners();
   }

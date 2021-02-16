@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:water_reminder/helpers/notifications_helper.dart';
 import 'package:water_reminder/providers/drink_water_provider.dart';
 import 'package:water_reminder/views/home_view.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationsHelper.init();
   runApp(MyApp());
 }
 

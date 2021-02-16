@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:water_reminder/models/drink_water_menu_item.dart';
 import 'package:water_reminder/providers/drink_water_provider.dart';
 
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 class DrinkWaterView extends StatefulWidget {
   DrinkWaterView({Key key}) : super(key: key);
 
@@ -198,39 +196,6 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
     );
   }
 
-  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
-  Future _onSelectNotification(String payload) {
-    print('Hello from notification');
-  }
-
-  void _showNotification() async {
-    var android = AndroidNotificationDetails('id', 'channel ', 'description',
-        priority: Priority.high, importance: Importance.max);
-    var iOS = IOSNotificationDetails();
-    var platform = new NotificationDetails(android: android, iOS: iOS);
-    await _flutterLocalNotificationsPlugin.show(
-        0, 'Flutter devs', 'Flutter Local Notification Demo', platform,
-        payload: 'Welcome to the Local Notification demo');
-    //await _flutterLocalNotificationsPlugin.periodicallyShow(1, 'You need to drink another cup of water!', 'Don\'t forget to improve your progress in the app', RepeatIn, notificationDetails)
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
-    var initializationSettingsIOs = IOSInitializationSettings();
-    var initSetttings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOs,
-    );
-
-    _flutterLocalNotificationsPlugin.initialize(initSetttings,
-        onSelectNotification: _onSelectNotification);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<DrinkWaterProvider>(
@@ -270,8 +235,6 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
                 onTapDown: _storeTapPosition,
                 onTap: () {
                   viewModel.addOneDrink();
-
-                  _showNotification();
                 },
                 onDoubleTap: () {
                   viewModel.addDoubleDrink();
