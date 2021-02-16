@@ -17,8 +17,13 @@ class DrinkWaterProvider extends ChangeNotifier {
   final _drinkWaterAmountCurrentName = 'drinkWaterAmountCurrent';
   final _firstRunName = 'seen';
   final _statsName = 'stats';
+  final _newDayControlDateName = 'newDayControlDate';
   // prefs
   SharedPreferences _prefs;
+  // new day control date
+  DateTime _newDayControlDate;
+  // user days progress history
+  // ToDo user progress history structue
   // user drink actions history
   final int _drinkActionsHistoryMaxSize = 10;
   Queue<int> _drinkActionsHistory;
@@ -168,6 +173,10 @@ class DrinkWaterProvider extends ChangeNotifier {
     // init new profile with default settings
     _profile = await _initProfile(gender, weight, activity);
 
+    // update current date
+    _newDayControlDate = DateTime.now();
+    // save newDayControlDate to prefs
+    await _setNewDaycontrolDateToPrefs(_newDayControlDate);
     // set drink water amount current by default
     _resetCurrentDrinkWaterAmount();
 
@@ -177,7 +186,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void loadProfile() {
+  void loadProfile() async {
     // load profile from prefs
     _profile = _getProfileFromPrefs();
     print('Profile loaded: ${_profile != null}');
@@ -186,6 +195,20 @@ class DrinkWaterProvider extends ChangeNotifier {
     // load current drink water amount
     _drinkWaterAmountCurrent = _getDrinkWaterAmountCurrentFromPrefs();
     print('DrinkWaterAmountCurrent loaded: $_drinkWaterAmountCurrent');
+
+    // get newDayControlDate from prefs
+    _newDayControlDate = _getNewDaycontrolDateFromPrefs();
+    // check current date
+    if (_checkDateDifference(_newDayControlDate) > 0) {
+      // save yesterday progress to db
+      // ToDo save local db progress history
+      // update current date
+      _newDayControlDate = DateTime.now();
+      // save newDayControlDate to prefs
+      await _setNewDaycontrolDateToPrefs(_newDayControlDate);
+      // reset progress
+      _resetCurrentDrinkWaterAmount();
+    }
 
     notifyListeners();
   }
@@ -277,5 +300,27 @@ class DrinkWaterProvider extends ChangeNotifier {
 
   bool _getFirstRunFlagFromPrefs() {
     return (_prefs.getBool(_firstRunName) ?? false);
+  }
+
+  Future<void> _setNewDaycontrolDateToPrefs(DateTime date) async {
+    bool result =
+        await _prefs.setString(_newDayControlDateName, date.toString());
+    print('NewDayControlDate saved: $result');
+  }
+
+  DateTime _getNewDaycontrolDateFromPrefs() {
+    String newDaycontrolDateString =
+        (_prefs.getString(_newDayControlDateName) ?? '');
+    if (newDaycontrolDateString.isEmpty) {
+      return DateTime.now();
+    } else
+      return DateTime.parse(newDaycontrolDateString);
+  }
+
+  int _checkDateDifference(DateTime date) {
+    DateTime now = DateTime.now();
+    return DateTime(date.year, date.month, date.day)
+        .difference(DateTime(now.year, now.month, now.day))
+        .inDays;
   }
 }
