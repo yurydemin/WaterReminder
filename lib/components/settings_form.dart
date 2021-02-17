@@ -116,183 +116,186 @@ class _SettingsFormState extends State<SettingsForm> {
             centerTitle: true,
           ),
           body: SingleChildScrollView(
-            child: Column(
-              children: [
-                _getFormsDivider(),
-                Text("Steps"),
-                Form(
-                  key: _stepsFormKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: _stepsOneTapController,
-                        onChanged: (value) {
-                          if (value != viewModel.oneTapBottleWaterAmount) {
-                            _settingsChanged();
-                          }
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Input one tap bottle water amount (ml)';
-                          if (int.parse(value) <= 0)
-                            return 'Incorrect water amount value';
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'One tap drink (ml)',
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+              child: Column(
+                children: [
+                  _getFormsDivider(),
+                  Text("Steps"),
+                  Form(
+                    key: _stepsFormKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: _stepsOneTapController,
+                          onChanged: (value) {
+                            if (value != viewModel.oneTapBottleWaterAmount) {
+                              _settingsChanged();
+                            }
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Input one tap bottle water amount (ml)';
+                            if (int.parse(value) <= 0)
+                              return 'Incorrect water amount value';
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'One tap drink (ml)',
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                      ),
-                      TextFormField(
-                        controller: _stepsDoubleTapController,
-                        onChanged: (value) {
-                          if (value != viewModel.doubleTapBottleWaterAmount) {
-                            _settingsChanged();
-                          }
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Input double tap bottle water amount (ml)';
-                          if (int.parse(value) <= 0)
-                            return 'Incorrect water amount value';
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Double tap drink (ml)',
+                        TextFormField(
+                          controller: _stepsDoubleTapController,
+                          onChanged: (value) {
+                            if (value != viewModel.doubleTapBottleWaterAmount) {
+                              _settingsChanged();
+                            }
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Input double tap bottle water amount (ml)';
+                            if (int.parse(value) <= 0)
+                              return 'Incorrect water amount value';
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Double tap drink (ml)',
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _getFormsDivider(),
-                Text("Notifications"),
-                Form(
-                  key: _notificationsFormKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: 'Notification Period',
+                  _getFormsDivider(),
+                  Text("Notifications"),
+                  Form(
+                    key: _notificationsFormKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Notification Period',
+                          ),
+                          value: _notificationPeriodSelected,
+                          items: viewModel.notificationPeriodList.keys
+                              .map((label) => DropdownMenuItem(
+                                    child: Text(label),
+                                    value: label,
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != _notificationPeriodSelected) {
+                              _notificationPeriodSelected = value;
+                              _settingsChanged();
+                            }
+                            //setState(() => _notificationPeriodSelected = value);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Choose notification period';
+                            return null;
+                          },
                         ),
-                        value: _notificationPeriodSelected,
-                        items: viewModel.notificationPeriodList.keys
-                            .map((label) => DropdownMenuItem(
-                                  child: Text(label),
-                                  value: label,
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != _notificationPeriodSelected) {
-                            _notificationPeriodSelected = value;
-                            _settingsChanged();
-                          }
-                          //setState(() => _notificationPeriodSelected = value);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Choose notification period';
-                          return null;
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _getFormsDivider(),
-                Text("Personal"),
-                Form(
-                  key: _personalFormKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: 'Gender',
+                  _getFormsDivider(),
+                  Text("Personal"),
+                  Form(
+                    key: _personalFormKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Gender',
+                          ),
+                          value: _genderSelected,
+                          items: viewModel.genderList
+                              .map((label) => DropdownMenuItem(
+                                    child: Text(label),
+                                    value: label,
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != _genderSelected) {
+                              _genderSelected = value;
+                              _settingsChanged();
+                            }
+                            //setState(() => _genderSelected = value);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Set your gender';
+                            return null;
+                          },
                         ),
-                        value: _genderSelected,
-                        items: viewModel.genderList
-                            .map((label) => DropdownMenuItem(
-                                  child: Text(label),
-                                  value: label,
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != _genderSelected) {
-                            _genderSelected = value;
-                            _settingsChanged();
-                          }
-                          //setState(() => _genderSelected = value);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Set your gender';
-                          return null;
-                        },
-                      ),
-                      TextFormField(
-                        controller: _weightController,
-                        onChanged: (value) {
-                          if (value != viewModel.weight) {
-                            _settingsChanged();
-                          }
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Input your weight';
-                          if (int.parse(value) <= 0)
-                            return 'Incorrect weight value';
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Weight',
+                        TextFormField(
+                          controller: _weightController,
+                          onChanged: (value) {
+                            if (value != viewModel.weight) {
+                              _settingsChanged();
+                            }
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Input your weight';
+                            if (int.parse(value) <= 0)
+                              return 'Incorrect weight value';
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Weight',
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                      ),
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: 'Activity',
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Activity',
+                          ),
+                          value: _activitiesSelected,
+                          items: viewModel.activitiesList
+                              .map((label) => DropdownMenuItem(
+                                    child: Text(label),
+                                    value: label,
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != _activitiesSelected) {
+                              _activitiesSelected = value;
+                              _settingsChanged();
+                            }
+                            //setState(() => _activitiesSelected = value);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Set your activity level';
+                            return null;
+                          },
                         ),
-                        value: _activitiesSelected,
-                        items: viewModel.activitiesList
-                            .map((label) => DropdownMenuItem(
-                                  child: Text(label),
-                                  value: label,
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != _activitiesSelected) {
-                            _activitiesSelected = value;
-                            _settingsChanged();
-                          }
-                          //setState(() => _activitiesSelected = value);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Set your activity level';
-                          return null;
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _getFormsDivider(),
-                if (_isChanged)
-                  RaisedButton(
-                    child: Text('Update'),
-                    onPressed: _updateProfile,
-                  ),
-              ],
+                  _getFormsDivider(),
+                  if (_isChanged)
+                    RaisedButton(
+                      child: Text('Update'),
+                      onPressed: _updateProfile,
+                    ),
+                ],
+              ),
             ),
           ),
         );

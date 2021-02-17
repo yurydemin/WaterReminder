@@ -29,6 +29,9 @@ class DrinkWaterProvider extends ChangeNotifier {
   Queue<int> _drinkActionsHistory;
   // first run
   bool _seen;
+  // progress congratulations
+  bool _showProgressCongratulations;
+  bool _readyToShowCongratulations;
   // all settings user profile
   Profile _profile;
   int _drinkWaterAmountCurrent;
@@ -42,6 +45,10 @@ class DrinkWaterProvider extends ChangeNotifier {
 
   // first run
   bool get seen => _seen;
+
+  // progress congratulations
+  bool get showProgressCongratulations =>
+      _showProgressCongratulations && _readyToShowCongratulations;
 
   // general lists
   List<String> get genderList => _genderList;
@@ -106,6 +113,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     _drinkActionsHistory = Queue<int>();
     // check first run
     _seen = _getFirstRunFlagFromPrefs();
+    // reset congratulations flag
+    _resetCongratulations();
   }
 
   // drink actions
@@ -128,6 +137,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     // start shedule notification
     NotificationsHelper.setScheduleNotification(notificationPeriodTime)
         .then((value) => print('Schedule started with add drink'));
+    // check congratulations
+    _checkCongratulations();
   }
 
   void undoLastDrink() {
@@ -144,6 +155,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     _addDrinkAction(-_drinkWaterAmountCurrent);
     // reset current water amount to zero
     _resetCurrentDrinkWaterAmount();
+    // reset congratulations
+    _resetCongratulations();
 
     notifyListeners();
   }
@@ -206,6 +219,8 @@ class DrinkWaterProvider extends ChangeNotifier {
       _setNewDaycontrolDateToPrefs(_newDayControlDate);
       // reset progress
       _resetCurrentDrinkWaterAmount();
+      // reset congratulations
+      _resetCongratulations();
     }
 
     notifyListeners();
@@ -321,5 +336,20 @@ class DrinkWaterProvider extends ChangeNotifier {
     return DateTime(date.year, date.month, date.day)
         .difference(DateTime(now.year, now.month, now.day))
         .inDays;
+  }
+
+  // congratulations
+  void setCongratulationsDone() {
+    _readyToShowCongratulations = false;
+  }
+
+  void _checkCongratulations() {
+    _showProgressCongratulations =
+        drinkWaterAmountCurrent >= drinkWaterAmountRequired;
+  }
+
+  void _resetCongratulations() {
+    _readyToShowCongratulations = true;
+    _showProgressCongratulations = false;
   }
 }

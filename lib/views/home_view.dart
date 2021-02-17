@@ -140,67 +140,70 @@ class _HomeViewState extends State<HomeView>
             child: AlertDialog(
               content: Form(
                 key: _introDialogFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Gender',
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Gender',
+                        ),
+                        value: _genderSelected,
+                        items: viewModel.genderList
+                            .map((label) => DropdownMenuItem(
+                                  child: Text(label),
+                                  value: label,
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() => _genderSelected = value);
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty)
+                            return 'Set your gender';
+                          return null;
+                        },
                       ),
-                      value: _genderSelected,
-                      items: viewModel.genderList
-                          .map((label) => DropdownMenuItem(
-                                child: Text(label),
-                                value: label,
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() => _genderSelected = value);
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Set your gender';
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: _weightController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Input your weight';
-                        if (int.parse(value) <= 0)
-                          return 'Incorrect weight value';
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Weight',
+                      TextFormField(
+                        controller: _weightController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty)
+                            return 'Input your weight';
+                          if (int.parse(value) <= 0)
+                            return 'Incorrect weight value';
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Weight',
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                       ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                    ),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Activity',
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Activity',
+                        ),
+                        value: _activitiesSelected,
+                        items: viewModel.activitiesList
+                            .map((label) => DropdownMenuItem(
+                                  child: Text(label),
+                                  value: label,
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() => _activitiesSelected = value);
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty)
+                            return 'Set your activity level';
+                          return null;
+                        },
                       ),
-                      value: _activitiesSelected,
-                      items: viewModel.activitiesList
-                          .map((label) => DropdownMenuItem(
-                                child: Text(label),
-                                value: label,
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() => _activitiesSelected = value);
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Set your activity level';
-                        return null;
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               actions: <Widget>[

@@ -51,6 +51,8 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
     _addCustomWaterAmountDialogFormKey.currentState.reset();
     // close dialog
     Navigator.of(context).pop();
+    // check congratulations
+    _checkCongratulations();
   }
 
   // reset current day progress
@@ -196,6 +198,40 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
     );
   }
 
+  // congratulations dialog
+  void _checkCongratulations() {
+    if (Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).showProgressCongratulations) _showCongratulationsDialog();
+  }
+
+  void _setCongratulationsDone() {
+    Provider.of<DrinkWaterProvider>(
+      context,
+      listen: false,
+    ).setCongratulationsDone();
+    Navigator.of(context).pop();
+  }
+
+  void _showCongratulationsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          title: Text('Today\'s goal has been achived!'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Good job'),
+              onPressed: _setCongratulationsDone,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<DrinkWaterProvider>(
@@ -225,19 +261,15 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
           ),
           body: Center(
             child: Container(
-              // decoration: BoxDecoration(
-              //   border: Border.all(
-              //     color: Colors.red,
-              //     width: 2,
-              //   ),
-              // ),
               child: GestureDetector(
                 onTapDown: _storeTapPosition,
                 onTap: () {
                   viewModel.addOneDrink();
+                  _checkCongratulations();
                 },
                 onDoubleTap: () {
                   viewModel.addDoubleDrink();
+                  _checkCongratulations();
                 },
                 onLongPress: _showDrinkWaterMenu,
                 child: Image.asset(
