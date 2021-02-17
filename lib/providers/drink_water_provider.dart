@@ -121,13 +121,13 @@ class DrinkWaterProvider extends ChangeNotifier {
     // add to current water amount
     _drinkWaterAmountCurrent += addedWaterAmount;
     notifyListeners();
-
     // save to prefs
     _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
     // save drink action to history
     _addDrinkAction(addedWaterAmount);
     // start shedule notification
-    NotificationsHelper.setScheduleNotification(notificationPeriodTime);
+    NotificationsHelper.setScheduleNotification(notificationPeriodTime)
+        .then((value) => print('Schedule started with add drink'));
   }
 
   void undoLastDrink() {
@@ -181,7 +181,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     _resetCurrentDrinkWaterAmount();
 
     // set first run ok
-    _seen = await _setFirstRunFlagToPrefs(firstRunFlag: true);
+    _seen = true;
+    _setFirstRunFlagToPrefs(firstRunFlag: _seen);
 
     notifyListeners();
   }
@@ -189,12 +190,9 @@ class DrinkWaterProvider extends ChangeNotifier {
   void loadProfile() {
     // load profile from prefs
     _profile = _getProfileFromPrefs();
-    print('Profile loaded: ${_profile != null}');
-    print('Water amount required: ${_profile.personal.waterAmount}');
 
     // load current drink water amount
     _drinkWaterAmountCurrent = _getDrinkWaterAmountCurrentFromPrefs();
-    print('DrinkWaterAmountCurrent loaded: $_drinkWaterAmountCurrent');
 
     // get newDayControlDate from prefs
     _newDayControlDate = _getNewDaycontrolDateFromPrefs();
@@ -233,7 +231,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     // update prefs
     await _prefs.reload();
     // update shedule notification
-    NotificationsHelper.setScheduleNotification(notificationPeriodTime);
+    NotificationsHelper.setScheduleNotification(notificationPeriodTime)
+        .then((value) => print('Schedule started with update profile'));
 
     notifyListeners();
   }
@@ -259,10 +258,7 @@ class DrinkWaterProvider extends ChangeNotifier {
     final newProfile = Profile(personal, drink, notification);
 
     // save profile to prefs
-    bool result =
-        await _prefs.setString(_profileName, jsonEncode(newProfile.toJson()));
-    print('Profile saved: $result');
-    print('Water amount: ${newProfile.personal.waterAmount}');
+    await _prefs.setString(_profileName, jsonEncode(newProfile.toJson()));
 
     return newProfile;
   }
@@ -285,29 +281,30 @@ class DrinkWaterProvider extends ChangeNotifier {
     _setDrinkWaterAmountCurrentToPrefs(_drinkWaterAmountCurrent);
   }
 
-  void _setDrinkWaterAmountCurrentToPrefs(int value) async {
-    bool result = await _prefs.setInt(_drinkWaterAmountCurrentName, value);
-    print('DrinkWaterAmountCurrent saved: $result');
+  void _setDrinkWaterAmountCurrentToPrefs(int value) {
+    _prefs
+        .setInt(_drinkWaterAmountCurrentName, value)
+        .then((value) => print(value));
   }
 
   int _getDrinkWaterAmountCurrentFromPrefs() {
     return (_prefs.getInt(_drinkWaterAmountCurrentName) ?? 0);
   }
 
-  Future<bool> _setFirstRunFlagToPrefs({
+  void _setFirstRunFlagToPrefs({
     bool firstRunFlag = false,
-  }) async {
-    return await _prefs.setBool(_firstRunName, firstRunFlag);
+  }) {
+    _prefs.setBool(_firstRunName, firstRunFlag).then((value) => print(value));
   }
 
   bool _getFirstRunFlagFromPrefs() {
     return (_prefs.getBool(_firstRunName) ?? false);
   }
 
-  void _setNewDaycontrolDateToPrefs(DateTime date) async {
-    bool result =
-        await _prefs.setString(_newDayControlDateName, date.toString());
-    print('NewDayControlDate saved: $result');
+  void _setNewDaycontrolDateToPrefs(DateTime date) {
+    _prefs
+        .setString(_newDayControlDateName, date.toString())
+        .then((value) => print(value));
   }
 
   DateTime _getNewDaycontrolDateFromPrefs() {
