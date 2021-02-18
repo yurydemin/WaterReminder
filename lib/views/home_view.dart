@@ -4,7 +4,7 @@ import 'package:after_layout/after_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:water_reminder/components/drink_water_view.dart';
 import 'package:water_reminder/components/settings_form.dart';
-import 'package:water_reminder/components/stats_table.dart';
+import 'package:water_reminder/components/progress_history_table.dart';
 import 'package:water_reminder/providers/drink_water_provider.dart';
 
 class HomeView extends StatefulWidget {
@@ -61,7 +61,7 @@ class _HomeViewState extends State<HomeView>
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.graphic_eq_outlined),
-            label: 'Stats',
+            label: 'History',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.face),
@@ -80,7 +80,7 @@ class _HomeViewState extends State<HomeView>
           : TabBarView(
               controller: _tabController,
               children: <Widget>[
-                StatsTable(),
+                ProgressHistoryTable(),
                 DrinkWaterView(),
                 SettingsForm(),
               ],

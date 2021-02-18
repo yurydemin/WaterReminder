@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:water_reminder/helpers/notifications_helper.dart';
 import 'package:water_reminder/models/notification.dart' as notify_settings;
 import 'package:water_reminder/models/drink.dart';
@@ -10,20 +11,21 @@ import 'package:water_reminder/models/common.dart';
 import 'package:water_reminder/extensions/string_extension.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:water_reminder/models/progress_history.dart';
 
 class DrinkWaterProvider extends ChangeNotifier {
   // prefs names
   final _profileName = 'profile';
   final _drinkWaterAmountCurrentName = 'drinkWaterAmountCurrent';
   final _firstRunName = 'seen';
-  final _statsName = 'stats';
+  final _progressHistoryName = 'progressHistory';
   final _newDayControlDateName = 'newDayControlDate';
   // prefs
   SharedPreferences _prefs;
   // new day control date
   DateTime _newDayControlDate;
   // user days progress history
-  // ToDo user progress history structue
+  ProgressHistory _progressHistory;
   // user drink actions history
   final int _drinkActionsHistoryMaxSize = 10;
   Queue<int> _drinkActionsHistory;
@@ -39,6 +41,9 @@ class DrinkWaterProvider extends ChangeNotifier {
   List<String> _genderList;
   List<String> _activitiesList;
   Map<String, int> _notificationPeriodList;
+
+  // progress history
+  ProgressHistory get progressHistory => _progressHistory;
 
   // is possible to undo drink action
   bool get isPossibleUndoDrinkAction => _drinkActionsHistory.isNotEmpty;
@@ -83,11 +88,16 @@ class DrinkWaterProvider extends ChangeNotifier {
   int get drinkWaterAmountRequired =>
       (_profile == null ? 0 : _profile.personal.waterAmount);
   int get drinkWaterAmountCurrent => _drinkWaterAmountCurrent;
+
   double get drinkWaterProgress {
     if (drinkWaterAmountCurrent == 0 || drinkWaterAmountRequired == 0)
       return 0.0;
     if (drinkWaterAmountCurrent >= drinkWaterAmountRequired) return 1.0;
     return (drinkWaterAmountCurrent / drinkWaterAmountRequired);
+  }
+
+  int get drinkWaterProgressPercentages {
+    return (drinkWaterProgress * 100).toInt();
   }
 
   Future<void> baseInit() async {
@@ -113,6 +123,8 @@ class DrinkWaterProvider extends ChangeNotifier {
     _drinkActionsHistory = Queue<int>();
     // check first run
     _seen = _getFirstRunFlagFromPrefs();
+    // load progress history
+    _progressHistory = _getProgressHistoryFromPrefs();
     // reset congratulations flag
     _resetCongratulations();
   }
@@ -211,8 +223,14 @@ class DrinkWaterProvider extends ChangeNotifier {
     _newDayControlDate = _getNewDaycontrolDateFromPrefs();
     // check current date
     if (_checkDateDifference(_newDayControlDate) > 0) {
-      // save yesterday progress to db
-      // ToDo save local db progress history
+      // add new progress item
+      final String date = DateFormat('dd-mm-yyyy').format(_newDayControlDate);
+      final String amount =
+          '$drinkWaterAmountCurrent / $drinkWaterAmountRequired';
+      final String progress = '$drinkWaterProgressPercentages %';
+      _progressHistory.addHistoryItem(date, amount, progress);
+      // save previous progress to prefs
+      _updateProgressHistory();
       // update current date
       _newDayControlDate = DateTime.now();
       // save newDayControlDate to prefs
@@ -289,6 +307,29 @@ class DrinkWaterProvider extends ChangeNotifier {
       return profile;
     }
     return null;
+  }
+
+  // work with progress history
+  void _updateProgressHistory() async {
+    // save profile to prefs
+    await _prefs.setString(
+        _progressHistoryName, jsonEncode(_progressHistory.toJson()));
+    // update prefs
+    await _prefs.reload();
+  }
+
+  ProgressHistory _getProgressHistoryFromPrefs() {
+    ProgressHistory progressHistory = ProgressHistory();
+    Map<String, dynamic> progressHistoryMap;
+    final String progressHistoryStr = _prefs.getString(_progressHistoryName);
+    if (progressHistoryStr != null)
+      progressHistoryMap =
+          jsonDecode(progressHistoryStr) as Map<String, dynamic>;
+
+    if (progressHistoryMap != null)
+      progressHistory = ProgressHistory.fromJson(progressHistoryMap);
+
+    return progressHistory;
   }
 
   void _resetCurrentDrinkWaterAmount() {

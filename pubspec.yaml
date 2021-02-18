@@ -28,6 +28,7 @@ dependencies:
   after_layout: ^1.0.7+2
   enum_to_string: ^1.0.14
   flutter_local_notifications: ^4.0.1
+  intl: ^0.16.1
 
 
   # The following adds the Cupertino Icons font to your application.
