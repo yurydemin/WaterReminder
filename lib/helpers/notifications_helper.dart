@@ -1,79 +1,60 @@
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/material.dart';
 
 class NotificationsHelper {
-  static final _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  static final _initializationSettingsAndroid =
-      AndroidInitializationSettings('app_icon');
-
-  static final _initializationSettings =
-      InitializationSettings(android: _initializationSettingsAndroid);
-
-  static final _androidNotificationDetails = AndroidNotificationDetails(
-    'channel id',
-    'channel name',
-    'channel description',
-    priority: Priority.high,
-    importance: Importance.max,
-  );
-
-  static final _notificationDetails =
-      NotificationDetails(android: _androidNotificationDetails);
-
   static Future<void> init() async {
-    await _flutterLocalNotificationsPlugin.initialize(
-      _initializationSettings,
-      onSelectNotification: _onClickNotification,
+    await AwesomeNotifications().initialize(
+      'resource://drawable/app_icon',
+      [
+        NotificationChannel(
+          channelKey: 'schedule',
+          channelName: 'Schedule notifications',
+          channelDescription: 'Notification channel for drink schedules',
+          defaultColor: Colors.blue,
+          ledColor: Colors.white,
+        ),
+      ],
     );
-    tz.initializeDatabase([]);
   }
 
   static Future<void> setScheduleNotification(int offsetMinutes) async {
-    await _cancelAllNotifications();
+    await cancelAllScheduleNotifications();
     if (offsetMinutes <= 0) return;
 
-    // calc next notification time
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, now.hour, now.minute);
-    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local)))
-      scheduledDate = scheduledDate.add(Duration(minutes: offsetMinutes));
-
-    // setup notification
-    await _flutterLocalNotificationsPlugin.zonedSchedule(
-        0,
-        'You need to drink another cup of water!',
-        'Don\'t forget to improve your progress in the app',
-        scheduledDate,
-        _notificationDetails,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        androidAllowWhileIdle: true);
+    var scheduleDate = DateTime.now().add(Duration(minutes: offsetMinutes));
+    await AwesomeNotifications().createNotification(
+      content: NotificationContent(
+          id: 0,
+          channelKey: 'schedule',
+          title: 'Be healthy!',
+          body: 'You need to drink another cup of water',
+          payload: {'uuid': 'user-profile-uuid'}),
+      actionButtons: [
+        NotificationActionButton(
+          key: 'DRINK',
+          label: 'One drink',
+          autoCancel: true,
+          buttonType: ActionButtonType.KeepOnTop,
+        ),
+        NotificationActionButton(
+          key: 'RESCHEDULE',
+          label: 'Reschedule',
+          autoCancel: true,
+          buttonType: ActionButtonType.KeepOnTop,
+          enabled: false,
+        ),
+      ],
+      schedule: NotificationSchedule(
+          crontabSchedule: CronHelper.instance
+              .atDate(scheduleDate.toUtc(), initialSecond: 0)),
+    );
   }
 
-  // ToDo periodic notification if user miss schedule notification
-  //static Future<void> setPeriodicNotification(int offset_minutes) {}
-
-  // ToDo configure timezones (ios version)
-  // static Future<void> _configureLocalTimeZone() async {
-  //   tz.initializeTimeZones();
-  //   final String timeZoneName = await platform.invokeMethod('getTimeZoneName');
-  //   tz.setLocalLocation(tz.getLocation(timeZoneName));
-  // }
-
-  static Future<void> _onClickNotification(String payload) async {
-    // cancel notifications if user enter the app
-    await _cancelAllNotifications();
+  static Future<void> cancelNotification(int id) async {
+    await AwesomeNotifications().cancel(id);
   }
 
-  static Future<void> _cancelNotification(int id) async {
-    await _flutterLocalNotificationsPlugin.cancel(id);
-  }
-
-  static Future<void> _cancelAllNotifications() async {
-    await _flutterLocalNotificationsPlugin.cancelAll();
+  static Future<void> cancelAllScheduleNotifications() async {
+    await AwesomeNotifications().cancelAllSchedules();
   }
 }

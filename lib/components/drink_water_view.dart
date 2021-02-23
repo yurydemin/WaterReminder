@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:water_reminder/helpers/notifications_helper.dart';
 import 'package:water_reminder/models/drink_water_menu_item.dart';
 import 'package:water_reminder/providers/drink_water_provider.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 class DrinkWaterView extends StatefulWidget {
   DrinkWaterView({Key key}) : super(key: key);
@@ -230,6 +232,41 @@ class _DrinkWaterViewState extends State<DrinkWaterView> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    AwesomeNotifications().actionStream.listen((recievedAction) {
+      // clicked on buttons
+      if (!StringUtils.isNullOrEmpty(recievedAction.buttonKeyPressed)) {
+        switch (recievedAction.buttonKeyPressed) {
+          // handle drink button click
+          case 'DRINK':
+            print('button drink clicked');
+            Provider.of<DrinkWaterProvider>(
+              context,
+              listen: false,
+            ).addOneDrink();
+            break;
+          // handle reschedule button click
+          case 'RESCHEDULE':
+            // ToDo reschedule notification
+            break;
+          default:
+            print('default');
+        }
+      }
+      // clicked on notification
+      else {
+        NotificationsHelper.cancelAllScheduleNotifications();
+      }
+      print('action ahahahaahahahahaha');
+    });
+    AwesomeNotifications().dismissedStream.listen((recievedNotification) {
+      // ToDo handle dismissed notification
+    });
   }
 
   @override
